@@ -25,13 +25,13 @@ repository functionality.
 
 ```bash
 flux_platform/
-├── clusters/                         # 🔑 Cluster wiring & specialization (ONLY place env/service varies)
+├── clusters/
 │   ├── dev/
 │   │   ├── flux-system/              # Flux bootstrap (managed by flux)
 │   │   │   ├── gotk-components.yaml
 │   │   │   └── gotk-sync.yaml
 │   │   │
-│   │   ├── beetle/                   # Service specialization (dev)
+│   │   ├── beetle/                   # Service specialization per env
 │   │   │   ├── gitrepository.yaml    # points to flux_platform
 │   │   │   └── kustomization.yaml    # renders apps/base + dev values
 │   │   │
@@ -48,7 +48,7 @@ flux_platform/
 │       │   ├── gotk-components.yaml
 │       │   └── gotk-sync.yaml
 │       │
-│       ├── beetle/                   # Service specialization (prd)
+│       ├── beetle/
 │       │   ├── gitrepository.yaml
 │       │   └── kustomization.yaml
 │       │
@@ -60,14 +60,14 @@ flux_platform/
 │           ├── gitrepository.yaml
 │           └── kustomization.yaml
 │
-├── apps/                             # ♻️ Single reusable manifest base (NO env, NO service)
+├── apps/                             # Single reusable manifest base (NO env, NO service)
 │   └── base/
 │       ├── deployment.yaml           # generic Deployment template
 │       ├── service.yaml              # generic Service template
 │       ├── kustomization.yaml        # composes manifests
 │       └── configmap-generator.yaml  # consumes flux_developer values
 │
-├── infrastructure/                   # 🧱 Cluster-wide platform components
+├── infrastructure/                   # Cluster-wide platform components
 │   ├── namespaces/
 │   │   └── apps.yaml
 │   ├── crds/
@@ -80,7 +80,6 @@ flux_platform/
 │       └── ...
 │
 └── README.md
-
 
 ```
 
