@@ -27,47 +27,43 @@ repository functionality.
 flux_platform/
 ├── clusters/
 │   ├── dev/
-│   │   ├── flux-system/              # Flux bootstrap (managed by flux)
+│   │   ├── flux-system/                      # flux bootstrap (managed by flux)
 │   │   │   ├── gotk-components.yaml
 │   │   │   └── gotk-sync.yaml
 │   │   │
-│   │   ├── beetle/                   # Service specialization per env
-│   │   │   ├── gitrepository.yaml    # points to flux_platform
-│   │   │   └── kustomization.yaml    # renders apps/base + dev values
+│   │   ├── gitrepository-platform.yaml        # points to flux_platform repo
+│   │   │
+│   │   ├── beetle/
+│   │   │   ├── gitrepository-config.yaml     # points to flux_developer repo
+│   │   │   └── kustomization-config.yaml     # renders and deploys configmaps
+│   │   │   └── kustomization-platform.yaml   # renders and deploys manifests
 │   │   │
 │   │   ├── sonar/
-│   │   │   ├── gitrepository.yaml
-│   │   │   └── kustomization.yaml
+│   │   │   ├── gitrepository-config.yaml
+│   │   │   ├── kustomization-config.yaml
+│   │   │   └── kustomization-platform.yaml
 │   │   │
 │   │   └── tiger/
-│   │       ├── gitrepository.yaml
-│   │       └── kustomization.yaml
+│   │       ├── gitrepository-config.yaml
+│   │       ├── kustomization-config.yaml
+│   │       └── kustomization-platform.yaml
 │   │
 │   └── prd/
 │       ├── flux-system/
 │       │   ├── gotk-components.yaml
 │       │   └── gotk-sync.yaml
-│       │
 │       ├── beetle/
-│       │   ├── gitrepository.yaml
-│       │   └── kustomization.yaml
-│       │
 │       ├── sonar/
-│       │   ├── gitrepository.yaml
-│       │   └── kustomization.yaml
-│       │
 │       └── tiger/
-│           ├── gitrepository.yaml
-│           └── kustomization.yaml
 │
-├── apps/                             # Single reusable manifest base (NO env, NO service)
+├── apps/
 │   └── base/
 │       ├── deployment.yaml           # generic Deployment template
 │       ├── service.yaml              # generic Service template
 │       ├── kustomization.yaml        # composes manifests
 │       └── configmap-generator.yaml  # consumes flux_developer values
 │
-├── infrastructure/                   # Cluster-wide platform components
+├── infrastructure/                   # shared, cluster wide platform components
 │   ├── namespaces/
 │   │   └── apps.yaml
 │   ├── crds/
