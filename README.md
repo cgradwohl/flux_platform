@@ -25,59 +25,62 @@ repository functionality.
 
 ```bash
 flux_platform/
-├── clusters/                  # Cluster-specific Flux configuration
+├── clusters/                         # 🔑 Cluster wiring & specialization (ONLY place env/service varies)
 │   ├── dev/
-│   │   ├── flux-system/       # Flux bootstrap for dev cluster
+│   │   ├── flux-system/              # Flux bootstrap (managed by flux)
 │   │   │   ├── gotk-components.yaml
 │   │   │   └── gotk-sync.yaml
-│   │   ├── beetle/
-│   │   │   ├── gitrepository.yaml
-│   │   │   └── kustomization.yaml
+│   │   │
+│   │   ├── beetle/                   # Service specialization (dev)
+│   │   │   ├── gitrepository.yaml    # points to flux_platform
+│   │   │   └── kustomization.yaml    # renders apps/base + dev values
+│   │   │
 │   │   ├── sonar/
 │   │   │   ├── gitrepository.yaml
 │   │   │   └── kustomization.yaml
+│   │   │
 │   │   └── tiger/
 │   │       ├── gitrepository.yaml
 │   │       └── kustomization.yaml
+│   │
 │   └── prd/
-│       ├── flux-system/       # Flux bootstrap for prod cluster
+│       ├── flux-system/
 │       │   ├── gotk-components.yaml
 │       │   └── gotk-sync.yaml
-│       ├── beetle/
+│       │
+│       ├── beetle/                   # Service specialization (prd)
 │       │   ├── gitrepository.yaml
 │       │   └── kustomization.yaml
+│       │
 │       ├── sonar/
 │       │   ├── gitrepository.yaml
 │       │   └── kustomization.yaml
+│       │
 │       └── tiger/
 │           ├── gitrepository.yaml
 │           └── kustomization.yaml
 │
-├── apps/                      # Microservice manifests (managed by platform)
-│   ├── beetle/
-│   │   ├── deployment.yaml
-│   │   ├── service.yaml
-│   │   ├── kustomization.yaml # references deployment/service, generates ConfigMap
-│   │   └── configmap-generator.yaml # optional base generator
-│   ├── sonar/
-│   │   ├── deployment.yaml
-│   │   ├── service.yaml
-│   │   └── kustomization.yaml
-│   └── tiger/
-│       ├── deployment.yaml
-│       ├── service.yaml
-│       └── kustomization.yaml
+├── apps/                             # ♻️ Single reusable manifest base (NO env, NO service)
+│   └── base/
+│       ├── deployment.yaml           # generic Deployment template
+│       ├── service.yaml              # generic Service template
+│       ├── kustomization.yaml        # composes manifests
+│       └── configmap-generator.yaml  # consumes flux_developer values
 │
-├── infrastructure/            # Cluster-wide resources
-│   ├── kyverno/               # admission controllers
+├── infrastructure/                   # 🧱 Cluster-wide platform components
+│   ├── namespaces/
+│   │   └── apps.yaml
+│   ├── crds/
 │   │   └── ...
-│   ├── kyverno-policies/      # example policies
+│   ├── kyverno/
 │   │   └── ...
-│   ├── crds/                  # custom resource definitions
+│   ├── kyverno-policies/
 │   │   └── ...
-│   └── namespaces/            # if needed, default namespace can be defined
+│   └── ingress/
+│       └── ...
 │
 └── README.md
+
 
 ```
 
@@ -96,7 +99,45 @@ flux_platform/
 - Organize by environment, not by microservice.
 - Each cluster folder contains Flux bootstrap, GitRepository, and Kustomization
   CRDs pointing to the apps repo.
+- Where service identity comes from, i.e.
+  `clusters/env/service/kustomization.yaml`
 
 `infrastructure/`
 
 - infrastructure dir contains common infra tools
+
+## Example Files
+
+In this example repoisotry setup, a differnet, corresponding repository defines
+all the kustomizations and kubernetes manifests required for the microservice
+deployment.
+
+`dev/kustomization.yaml`
+
+```yaml
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+namespace: apps
+resources:
+  - github.com/your-org/flux_developer//base?ref=main
+configMapGenerator:
+  - name: dev-beetle-config
+    files:
+      - github.com/your-org/tenant-repo//base/beetle/config.yaml
+      - github.com/your-org/tenant-repo//dev/beetle/config.yaml
+```
+
+`prd/kustomization.yaml`
+
+```yaml
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+namespace: apps
+resources:
+  - github.com/your-org/flux_developer//base?ref=main
+configMapGenerator:
+  - name: prd-beetle-config
+    files:
+      - github.com/your-org/tenant-repo//base/beetle/config.yaml
+      - github.com/your-org/tenant-repo//prd/beetle/config.yaml
+```
