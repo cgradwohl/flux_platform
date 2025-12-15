@@ -140,3 +140,60 @@ configMapGenerator:
       - github.com/your-org/tenant-repo//base/beetle/config.yaml
       - github.com/your-org/tenant-repo//prd/beetle/config.yaml
 ```
+
+---
+
+## Flux Bootstrapping
+
+1. start two minikube clusters
+
+```bash
+minikube start -p minikube-dev
+
+minikube start -p minikube-prd
+
+```
+
+2. expose PAT
+
+```bash
+export GITHUB_TOKEN="your pat token"
+```
+
+3. bootstrap dev cluster
+
+```bash
+k config use-context minikube-dev
+
+flux bootstrap github \
+  --owner=cgradwohl \
+  --repository=flux_platform \
+  --branch=main \
+  --path=clusters/dev/flux-system \
+  --personal=false
+```
+
+4. bootstrap prd cluster
+
+```bash
+k config use-context minikube-prd
+
+flux bootstrap github \
+  --owner=cgradwohl \
+  --repository=flux_platform \
+  --branch=main \
+  --path=clusters/prd/flux-system \
+  --personal=false
+```
+
+5. verify
+
+```bash
+cd flux_platform && git pull
+
+kubectl config use-context dev
+kubectl get pods -n flux-system
+
+kubectl config use-context prd
+kubectl get pods -n flux-system
+```
