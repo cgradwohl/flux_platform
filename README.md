@@ -27,25 +27,23 @@ repository functionality.
 flux_platform/
 ├── clusters/
 │   ├── dev/
-│   │   ├── flux-system/                      # flux bootstrap (managed by flux)
+│   │   ├── flux-system/                     # flux bootstrap (managed by flux)
 │   │   │   ├── gotk-components.yaml
 │   │   │   └── gotk-sync.yaml
 │   │   │
-│   │   ├── gitrepository-platform.yaml        # points to flux_platform repo
+│   │   ├── gitrepository-platform.yaml      # points to flux_platform repo
+│   │   ├── gitrepository-developer.yaml     # points to flux_developer repo
 │   │   │
 │   │   ├── beetle/
-│   │   │   ├── gitrepository-config.yaml     # points to flux_developer repo
-│   │   │   └── kustomization-config.yaml     # renders and deploys configmaps
-│   │   │   └── kustomization-platform.yaml   # renders and deploys manifests
+│   │   │   └── kustomization-developer.yaml # renders and deploys configmaps
+│   │   │   └── kustomization-platform.yaml  # renders and deploys manifests
 │   │   │
 │   │   ├── sonar/
-│   │   │   ├── gitrepository-config.yaml
-│   │   │   ├── kustomization-config.yaml
+│   │   │   ├── kustomization-developer.yaml
 │   │   │   └── kustomization-platform.yaml
 │   │   │
 │   │   └── tiger/
-│   │       ├── gitrepository-config.yaml
-│   │       ├── kustomization-config.yaml
+│   │       ├── kustomization-developer.yaml
 │   │       └── kustomization-platform.yaml
 │   │
 │   └── prd/
@@ -100,6 +98,115 @@ flux_platform/
 `infrastructure/`
 
 - infrastructure dir contains common infra tools
+
+## Rendering ConfigMaps
+
+In this demo, we require that the developer owned repository, `flux_developer`,
+has no knowledge of Kubernetes or Flux CD resources. Developer teams only
+provide structured YAML configuration files and kustomize files, organized by
+service and environment:
+
+```bash
+flux_developer/
+├── beetle/
+│   ├── base/
+│   │   └── config.yaml
+│   ├── dev/
+│   │   └── config.yaml
+│   │   └── kustomization.yaml
+│   └── prd/
+│       └── config.yaml
+│   │   └── kustomization.yaml
+├── sonar/
+│   ├── base/
+│   ├── dev/
+│   └── prd/
+└── tiger/
+    ├── base/
+    ├── dev/
+    └── prd/
+```
+
+The GitOps pipeline is defined:
+`clusters/dev/beetle/kustomization-developer.yaml`
+
+```yaml
+# flux_platform/clusters/dev/beetle/kustomization-developer.yaml
+# --------------------------------------------------------------
+
+apiVersion: kustomize.toolkit.fluxcd.io/v1beta2
+kind: Kustomization
+metadata:
+  name: beetle-dev-config
+  namespace: flux-system
+spec:
+  interval: 1m
+  prune: true
+  wait: true
+
+  sourceRef:
+    kind: GitRepository
+    name: flux-developer
+
+  # points to the dev folder in the developer repo aka the folder containing
+  # kustomization.yaml
+  path: ./beetle/dev
+
+  postBuild:
+    substitute:
+      SERVICE_NAME: beetle
+      ENV: dev
+```
+
+Note that this Kustomization references the flux-developer GitRepository, which
+is defined at `clusters/dev/gitrepository-developer.yaml`
+
+```yaml
+# flux_platform/clusters/dev/gitrepository-developer.yaml
+# --------------------------------------------------------
+
+apiVersion: source.toolkit.fluxcd.io/v1beta2
+kind: GitRepository
+metadata:
+  name: flux-developer
+  namespace: flux-system
+spec:
+  interval: 1m
+  url: https://github.com/cgradwohl/flux_developer
+  ref:
+    branch: main
+```
+
+The actual ConfigMap is generated inside `flux_developer` by a Kustomize
+configMapGenerator:
+
+```yaml
+# flux_developer/beetle/dev/kustomization.yaml
+
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+
+configMapGenerator:
+  - name: beetle-config
+    files:
+      - ../../base/config.yaml # base defaults
+      - config.yaml # dev overrides
+```
+
+Flux monitors the `flux_developer` repo via the GitRepository CRD.
+
+When either `base/config.yaml` or `dev/config.yaml` changes, Flux sees a new
+GitRepository artifact.
+
+The Kustomization CRD in `flux_platform` builds the ConfigMap by executing the
+kustomization.yaml in `flux_developer/dev`.
+
+The resulting ConfigMap is applied to the cluster.
+
+This preserves the developer-only control over configuration while allowing Flux
+to handle deployment automation.
+
+## Rendering Kubernetes Manifests
 
 ## Example Files
 
