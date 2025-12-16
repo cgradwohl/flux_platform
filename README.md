@@ -272,7 +272,7 @@ flux bootstrap github \
   --owner=cgradwohl \
   --repository=flux_platform \
   --branch=main \
-  --path=clusters/dev/flux-system \
+  --path=clusters/dev \
   --personal=false
 ```
 
@@ -285,7 +285,7 @@ flux bootstrap github \
   --owner=cgradwohl \
   --repository=flux_platform \
   --branch=main \
-  --path=clusters/prd/flux-system \
+  --path=clusters/prd \
   --personal=false
 ```
 
