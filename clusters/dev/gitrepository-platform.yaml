@@ -1,7 +1,7 @@
-apiVersion: source.toolkit.fluxcd.io/v1beta2
+apiVersion: source.toolkit.fluxcd.io/v1
 kind: GitRepository
 metadata:
-  name: flux_platform
+  name: flux-platform
   namespace: flux-system
 spec:
   interval: 1m
