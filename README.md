@@ -1,16 +1,14 @@
 # Flux Platform
 
 This repository demonstrates how Platform and DevOps teams can manage a
-multi-tenant K8 cluster using git and Flux.
+multi-environment K8 cluster using git and Flux.
 
-In this example each tenant is an application microservice deployment, which is
-managed and configure here. Everything required for the microservice to run on
-Kubernetes is defined here. The values that the configmaps are generated from
-are the responsibility of the developer team, who has no knowledge of this
-repository.
+In this example each environment has exactly one cluster, which hosts three
+application microservice deployment.
 
-The developer team owns and manages their application config values and schemas
-here: https://github.com/cgradwohl/flux_developer
+Everything required for the microservice to run on Kubernetes is defined here,
+except configmaps, which are managed and generated in the developer owned
+repository: https://github.com/cgradwohl/flux_developer
 
 ## A Note about manifest templates
 
