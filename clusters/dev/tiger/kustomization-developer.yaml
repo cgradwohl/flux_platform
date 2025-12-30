@@ -1,0 +1,22 @@
+apiVersion: kustomize.toolkit.fluxcd.io/v1
+kind: Kustomization
+metadata:
+  name: tiger-dev-config
+  namespace: flux-system
+spec:
+  interval: 1m
+  prune: true
+  wait: true
+
+  sourceRef:
+    kind: GitRepository
+    name: flux-developer
+
+  # points to the dev folder in the developer repo aka the folder containing
+  # kustomization.yaml
+  path: ./tiger/dev
+
+  postBuild:
+    substitute:
+      SERVICE_NAME: tiger
+      ENV: dev
