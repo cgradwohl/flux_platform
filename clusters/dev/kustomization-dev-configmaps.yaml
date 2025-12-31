@@ -1,0 +1,15 @@
+# this CRD defines a gitops pipeline for dev env
+apiVersion: kustomize.toolkit.fluxcd.io/v1
+kind: Kustomization
+metadata:
+  name: dev-configmaps
+  namespace: flux-system
+spec:
+  interval: 1m
+  prune: true
+  wait: true
+
+  sourceRef:
+    kind: GitRepository
+    name: flux-developer
+  path: ./dev
