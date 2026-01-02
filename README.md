@@ -298,3 +298,46 @@ kubectl get pods -n flux-system
 kubectl config use-context prd
 kubectl get pods -n flux-system
 ```
+
+---
+
+NOTE:
+
+The above was an old bootstrap flow that used flux bootstrap github
+--path=clusters/dev. This told Flux:
+
+“Here’s my repo → everything in clusters/dev is now managed by bootstrap.”
+
+Bootstrap then created the flux-system GitRepository + Kustomization, and
+automatically reconciled everything in that folder.
+
+That worked fine when your clusters/dev only had bootstrap-managed stuff. But
+once you added cluster-owned GitRepositories / Kustomizations in the same
+folder, bootstrap’s prune: true started deleting them → flux got “stuck” and
+resources were removed.
+
+---
+
+Older Notes:
+
+Right now your clusters/dev/flux-system/gotk-sync.yaml (and kustomization.yaml)
+are doing two things at once:
+
+They are bootstrapping themselves: the GitRepository is called flux-system and
+the Kustomization points at ./clusters/dev. That means Flux is trying to
+reconcile the same folder that contains itself → very easy to get into “stuck”
+or “deleting its own controllers” states.
+
+Because prune: true is on flux-system, any resources in clusters/dev that
+weren’t created by bootstrap (like your old gitrepository-\*.yaml or configmaps
+Kustomizations) can get pruned by Flux → this is why your pipelines were
+“deleted”.
+
+Bootstrap: Only Flux controllers + GitRepository that points to your main repo
+(flux_platform).
+
+Cluster-owned resources: gitrepository-\*.yaml +
+kustomization-dev-configmaps.yaml live in clusters/dev/ but are managed by a
+separate Kustomization CRD in flux-system.
+
+Bootstrap does not touch them, so they are safe from prune.
