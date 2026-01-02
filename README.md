@@ -249,9 +249,9 @@ configMapGenerator:
 1. start two minikube clusters
 
 ```bash
-minikube start -p minikube-dev
+minikube start -p dev
 
-minikube start -p minikube-prd
+minikube start -p prd
 
 ```
 
@@ -264,7 +264,7 @@ export GITHUB_TOKEN="your pat token"
 3. bootstrap dev cluster
 
 ```bash
-k config use-context minikube-dev
+k config use-context dev
 
 flux bootstrap github \
   --owner=cgradwohl \
@@ -277,7 +277,7 @@ flux bootstrap github \
 4. bootstrap prd cluster
 
 ```bash
-k config use-context minikube-prd
+k config use-context prd
 
 flux bootstrap github \
   --owner=cgradwohl \
