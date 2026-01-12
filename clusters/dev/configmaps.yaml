@@ -1,3 +1,14 @@
+apiVersion: source.toolkit.fluxcd.io/v1
+kind: GitRepository
+metadata:
+  name: flux-developer
+  namespace: flux-system
+spec:
+  interval: 1m
+  url: https://github.com/cgradwohl/flux_developer
+  ref:
+    branch: main
+---
 # this CRD defines a gitops pipeline for dev env
 apiVersion: kustomize.toolkit.fluxcd.io/v1
 kind: Kustomization
