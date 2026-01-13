@@ -16,7 +16,7 @@ spec:
     spec:
       containers:
         - name: app
-          image: app:latest
+          image: beetle:latest
           imagePullPolicy: IfNotPresent
           ports:
             - containerPort: 8080
