@@ -6,35 +6,22 @@ namePrefix: beetle-
 resources:
   - ../../runtime
 
-generatorOptions:
-  disableNameSuffixHash: true
+images:
+  - name: beetle
+    newName: beetle
+    newTag: latest
 
-# Patches use JSON-Patch style to replace the placeholders in the runtime.
-# We patch both the Deployment and the Service so labels/selectors match the prefixed name.
-patches:
-  # 1) Deployment patches: image, configMap name, selector & template labels
-  - target:
-      kind: Deployment
-      name: app
-    patch: |
-      - op: replace
-        path: /spec/template/spec/containers/0/image
-        value: my-registry.example.com/org/beetle:latest
-      - op: replace
-        path: /spec/template/spec/volumes/0/configMap/name
-        value: beetle-config
-      - op: replace
-        path: /spec/selector/matchLabels/app
-        value: beetle
-      - op: replace
-        path: /spec/template/metadata/labels/app
-        value: beetle
+commonLabels:
+  app.kubernetes.io/part-of: platform
 
-  # 2) Service patch: selector label must match the Deployment's labels
-  - target:
-      kind: Service
-      name: app
-    patch: |
-      - op: replace
-        path: /spec/selector/app
-        value: beetle
+replacements:
+  # Replace config volume name
+  - source:
+      kind: ConfigMap
+      name: beetle-config
+      fieldPath: metadata.name
+    targets:
+      - select:
+          kind: Deployment
+        fieldPaths:
+          - spec.template.spec.volumes.[name=config].configMap.name
