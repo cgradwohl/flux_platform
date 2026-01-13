@@ -14,14 +14,15 @@ images:
 commonLabels:
   app.kubernetes.io/part-of: platform
 
-replacements:
-  # Replace config volume name
-  - source:
-      kind: ConfigMap
-      name: beetle-config
-      fieldPath: metadata.name
-    targets:
-      - select:
-          kind: Deployment
-        fieldPaths:
-          - spec.template.spec.volumes.[name=config].configMap.name
+patches:
+  - target:
+      kind: Deployment
+      name: app
+    patch: |-
+      spec:
+        template:
+          spec:
+            volumes:
+              - name: config
+                configMap:
+                  name: beetle-config
