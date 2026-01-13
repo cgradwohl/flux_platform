@@ -1,0 +1,23 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: beetle-app
+  namespace: default
+  labels:
+    app: beetle-app
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: beetle-app
+  template:
+    metadata:
+      labels:
+        app: beetle-app
+    spec:
+      containers:
+        - name: beetle-app
+          image: beetle-app:latest # local image
+          imagePullPolicy: IfNotPresent
+          ports:
+            - containerPort: 8080
