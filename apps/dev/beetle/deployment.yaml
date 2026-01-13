@@ -21,3 +21,11 @@ spec:
           imagePullPolicy: Never
           ports:
             - containerPort: 8080
+          volumeMounts:
+            - name: config
+              mountPath: /etc/beetle-config
+              readOnly: true
+      volumes:
+        - name: config
+          configMap:
+            name: beetle-config
