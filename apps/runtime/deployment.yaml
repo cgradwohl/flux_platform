@@ -1,0 +1,30 @@
+# golden deployment contract
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  # name: app is intentional, kustomize will replace it
+  name: app
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: app
+  template:
+    metadata:
+      labels:
+        app: app
+    spec:
+      containers:
+        - name: app
+          image: app:latest
+          imagePullPolicy: IfNotPresent
+          ports:
+            - containerPort: 8080
+          volumeMounts:
+            - name: config
+              mountPath: /etc/config
+              readOnly: true
+      volumes:
+        - name: config
+          configMap:
+            name: config # i.e. becomes beetle-config

@@ -1,0 +1,13 @@
+resources:
+  - ../../runtime
+
+namePrefix: beetle-
+
+commonLabels:
+  app.kubernetes.io/name: beetle
+  app.kubernetes.io/part-of: platform
+
+images:
+  - name: app
+    newName: beetle
+    newTag: latest
