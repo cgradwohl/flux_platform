@@ -2,7 +2,10 @@ apiVersion: kustomize.config.k8s.io/v1beta1
 kind: Kustomization
 
 resources:
-  - ../base
+  - ../../runtime
+
+generatorOptions:
+  disableNameSuffixHash: true
 
 patches:
   - target:
@@ -12,3 +15,5 @@ patches:
       - op: replace
         path: /spec/replicas
         value: 1
+
+namePrefix: beetle-
