@@ -4,7 +4,7 @@ metadata:
   name: app
 spec:
   selector:
-    app: app
+    app: app # placeholder selector (overlay will replace)
   ports:
     - port: 80
       targetPort: 8080
