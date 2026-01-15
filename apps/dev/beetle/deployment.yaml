@@ -15,12 +15,16 @@ spec:
       labels:
         app: beetle-app
     spec:
+      serviceAccountName: beetle-sa
       containers:
         - name: beetle-app
           image: beetle-app:latest
           imagePullPolicy: Never
           ports:
             - containerPort: 8080
+          envFrom:
+            - secretRef:
+                name: test-aws-creds
           volumeMounts:
             - name: config
               mountPath: /etc/beetle-config
