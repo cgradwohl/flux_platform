@@ -25,7 +25,15 @@ spec:
             - name: config
               mountPath: /etc/beetle-config
               readOnly: true
+            - name: secrets-store-inline
+              mountPath: /etc/secrets
       volumes:
         - name: config
           configMap:
             name: beetle-config
+        - name: secrets-store-inline
+          csi:
+            driver: secrets-store.csi.k8s.io
+            readOnly: true
+            volumeAttributes:
+              secretProviderClass: "beetle-aws-sm"
