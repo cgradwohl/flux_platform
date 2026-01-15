@@ -341,3 +341,81 @@ kustomization-dev-configmaps.yaml live in clusters/dev/ but are managed by a
 separate Kustomization CRD in flux-system.
 
 Bootstrap does not touch them, so they are safe from prune.
+
+## CSI Driver
+
+### Installation
+
+See `infrastructure/csi-driver/helmrelease.yaml` and
+`infrastructure/csi-driver/helmrepository.yaml`
+
+### Secret Creatation
+
+Two plain text secrets where created via AWS Console, `demo-redis-password` and
+`demo-postgres-password`
+
+### AWS Access and Permissions
+
+The simplest mechanism to authenticate the in-cluster csi driver provider to aws
+secret store was to manually provide AWS Access Keys from a IAM User with an
+attached policy.
+
+These AWS Access Keys where provided to the CSI Driver DaemonSet through env
+access.
+
+1. create an IAM policy in DOSB: `test-csi-driver-policy`
+
+```json
+{
+  "Version": "2012-10-17",
+  "Statement": [
+    {
+      "Sid": "AllowSecretsManagerRead",
+      "Effect": "Allow",
+      "Action": [
+        "secretsmanager:GetSecretValue",
+        "secretsmanager:DescribeSecret",
+        "secretsmanager:ListSecrets"
+      ],
+      "Resource": ["arn:aws:secretsmanager:us-east-1:154304726148:secret:*"]
+    },
+    {
+      "Sid": "AllowSSMRead",
+      "Effect": "Allow",
+      "Action": [
+        "ssm:GetParameter",
+        "ssm:GetParameters",
+        "ssm:DescribeParameters"
+      ],
+      "Resource": ["arn:aws:ssm:us-east-1:154304726148:parameter/*"]
+    },
+    {
+      "Sid": "AllowKMSDecryptIfNeeded",
+      "Effect": "Allow",
+      "Action": ["kms:Decrypt"],
+      "Resource": ["*"]
+    }
+  ]
+}
+```
+
+2. Create IAM User: `test-csi-driver-user`
+3. Attach IAM Policy to User
+4. Generate Access Keys for `test-csi-driver-user`
+5. Create Kubernetes Secret Object for these AWS Access Keys: `test-aws-creds`
+
+```bash
+# replace with the real keys/region
+kubectl -n kube-system create secret generic test-aws-creds \
+  --from-literal=AWS_ACCESS_KEY_ID=abc \
+  --from-literal=AWS_SECRET_ACCESS_KEY=123 \
+  --from-literal=AWS_REGION=us-east-1
+```
+
+6. Inject the Kubernetes Secret Object `test-aws-cred` into the DaemonSet env:
+
+```bash
+kubectl -n kube-system set env daemonset/secrets-store-csi-driver-provider-aws --from=secret/test-aws-creds
+```
+
+THIS IS FOR DEMO PURPOSES ONLY.
